@@ -1,0 +1,71 @@
+service: shopify-event-processor
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-2
+  environment:
+    SHOPIFY_CLIENT_ID: ${env:SHOPIFY_CLIENT_ID}
+    SHOPIFY_CLIENT_SECRET: ${env:SHOPIFY_CLIENT_SECRET}
+    SHOPIFY_API_VERSION: ${env:SHOPIFY_API_VERSION}
+    SHOPIFY_WEBHOOK_SECRET: ${env:SHOPIFY_WEBHOOK_SECRET}
+    NODE_ENV: ${env:NODE_ENV}
+    LOG_LEVEL: ${env:LOG_LEVEL, 'info'}
+    AWS_DYNAMODB_TABLE: ${env:AWS_DYNAMODB_TABLE}
+    ENCRYPTION_KEY: ${env:ENCRYPTION_KEY}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:Query
+          Resource: 
+            - "arn:aws:dynamodb:us-east-2:767398030559:table/portfolio-shopify-auth"
+
+plugins:
+  - serverless-offline
+
+package:
+  individually: true
+  patterns:
+    - '!src/**'
+    - '!test/**'
+    - '!*.md'
+    - '!eslint.config.js'
+    - '!tsconfig.json'
+    - '!jest.config.js'
+    - 'node_modules/**'
+    - 'dist/**'
+    - 'handler.js'
+    - 'package.json'
+
+functions:
+  webhook-processor:
+    handler: handler.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: /
+          method: ANY
+          cors: true
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+    host: 0.0.0.0
+    lambdaPort: 3003
+    cors:
+      origin: "*"
+      headers:
+        - Content-Type
+        - X-Shopify-Hmac-Sha256
+        - X-Shopify-Shop-Domain
+        - X-Shopify-Topic
+        - X-Shopify-Webhook-Id
+      allowCredentials: true
