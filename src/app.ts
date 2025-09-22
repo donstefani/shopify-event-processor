@@ -2,8 +2,14 @@ import express from 'express';
 import helmet from 'helmet';
 import { webhookRoutes, captureRawBody, logWebhookEvent } from './webhooks/index.js';
 import webhookManagementRoutes from './routes/webhook-management.js';
+import { errorHandlingService, ErrorSeverity, ErrorCategory } from './services/index.js';
 
 const app = express();
+
+// Initialize error handling service
+errorHandlingService.initialize().catch(error => {
+  console.error('Failed to initialize error handling service:', error);
+});
 
 // Security middleware
 app.use(helmet());
@@ -34,6 +40,35 @@ app.get('/health', (_req, res) => {
   });
 });
 
+// Test error handling endpoint (for development/testing)
+if (process.env['NODE_ENV'] === 'development') {
+  app.get('/test-error', async (req, res) => {
+    const { severity = 'high', category = 'system' } = req.query;
+    
+    try {
+      // Simulate an error
+      throw new Error(`Test error for ${severity} severity and ${category} category`);
+    } catch (error) {
+      await errorHandlingService.handleError(
+        error,
+        severity as ErrorSeverity,
+        category as ErrorCategory,
+        {
+          service: 'test-endpoint',
+          operation: 'test-error',
+          requestId: req.headers['x-request-id'] as string
+        }
+      );
+      
+      res.json({
+        success: true,
+        message: `Test error sent with severity: ${severity}, category: ${category}`,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+}
+
 
 // Webhook management API routes
 app.use('/api/webhooks', webhookManagementRoutes);
@@ -62,8 +97,24 @@ app.use((req, res) => {
 });
 
 // Global error handler
-app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((error: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled error:', error);
+  
+  // Send critical error notification
+  errorHandlingService.handleCriticalError(error, {
+    service: 'express-app',
+    operation: 'global-error-handler',
+    requestId: req.headers['x-request-id'] as string,
+    additionalData: {
+      path: req.path,
+      method: req.method,
+      userAgent: req.headers['user-agent'],
+      ip: req.ip
+    }
+  }).catch(notificationError => {
+    console.error('Failed to send error notification:', notificationError);
+  });
+  
   res.status(500).json({
     success: false,
     error: 'Internal server error',
