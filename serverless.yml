@@ -5,7 +5,7 @@ useDotenv: true
 provider:
   name: aws
   runtime: nodejs22.x
-  region: us-east-2
+  region: us-east-1
   environment:
     SHOPIFY_CLIENT_ID: ${env:SHOPIFY_CLIENT_ID}
     SHOPIFY_CLIENT_SECRET: ${env:SHOPIFY_CLIENT_SECRET}
@@ -21,9 +21,12 @@ provider:
         - Effect: Allow
           Action:
             - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
             - dynamodb:Query
+            - dynamodb:Scan
           Resource: 
-            - "arn:aws:dynamodb:us-east-2:767398030559:table/portfolio-shopify-auth"
+            - "arn:aws:dynamodb:us-east-1:767398030559:table/portfolio-shopify-auth"
 
 plugins:
   - serverless-offline
@@ -69,3 +72,6 @@ custom:
         - X-Shopify-Topic
         - X-Shopify-Webhook-Id
       allowCredentials: true
+
+# Note: Using DynamoDB table 'portfolio-shopify-auth' 
+# created by the shopify-auth-service deployment
