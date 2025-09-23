@@ -20,7 +20,7 @@ export class TokenService {
 
   constructor() {
     this.dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({
-      region: process.env['AWS_REGION'] || 'us-east-2'
+      region: process.env['AWS_REGION'] || 'us-east-1'
     }));
     this.tableName = process.env['AWS_DYNAMODB_TABLE'] || 'portfolio-shopify-auth';
     this.encryptionKey = process.env['ENCRYPTION_KEY'] || 'fallback-key-change-in-production';
