@@ -67,14 +67,6 @@ export interface WebhookError {
   shop?: string;
 }
 
-// API Response wrapper
-export interface WebhookApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 // Webhook Handler Result
 export interface WebhookHandlerResult {
   success: boolean;

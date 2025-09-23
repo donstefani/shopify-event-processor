@@ -67,19 +67,7 @@ export const WebhookSubscriptionUpdateInputSchema = z.object({
   })
 });
 
-// GraphQL Client Configuration Schema
-export const GraphQLClientConfigSchema = z.object({
-  shopDomain: z.string().min(1),
-  accessToken: z.string().min(1),
-  apiVersion: z.string().min(1),
-  retryConfig: z.object({
-    maxRetries: z.number().int().min(0).max(10),
-    baseDelay: z.number().int().min(100),
-    maxDelay: z.number().int().min(1000),
-    backoffMultiplier: z.number().min(1).max(5),
-    retryableStatusCodes: z.array(z.number().int())
-  }).optional()
-});
+// GraphQL Client Configuration Schema (moved to avoid duplication)
 
 // Rate Limit Information Schema
 export const RateLimitInfoSchema = z.object({
@@ -180,7 +168,6 @@ export type ErrorContextType = z.infer<typeof ErrorContextSchema>;
 export type ErrorNotificationConfigType = z.infer<typeof ErrorNotificationConfigSchema>;
 export type WebhookSubscriptionInputType = z.infer<typeof WebhookSubscriptionInputSchema>;
 export type WebhookSubscriptionUpdateInputType = z.infer<typeof WebhookSubscriptionUpdateInputSchema>;
-export type GraphQLClientConfigType = z.infer<typeof GraphQLClientConfigSchema>;
 export type RateLimitInfoType = z.infer<typeof RateLimitInfoSchema>;
 export type ThrottleStatusType = z.infer<typeof ThrottleStatusSchema>;
 export type RetryConfigType = z.infer<typeof RetryConfigSchema>;
@@ -188,7 +175,61 @@ export type WebhookManagementResponseType = z.infer<typeof WebhookManagementResp
 export type ApiResponseType = z.infer<typeof ApiResponseSchema>;
 export type EnvironmentConfigType = z.infer<typeof EnvironmentConfigSchema>;
 
+// GraphQL Request Schema
+export const GraphQLRequestSchema = z.object({
+  query: z.string().min(1),
+  variables: z.record(z.string(), z.any()).optional(),
+  operationName: z.string().optional()
+});
+
+// GraphQL Response Schema
+export const GraphQLResponseSchema = z.object({
+  data: z.any().optional(),
+  errors: z.array(z.object({
+    message: z.string(),
+    locations: z.array(z.object({
+      line: z.number(),
+      column: z.number()
+    })).optional(),
+    path: z.array(z.union([z.string(), z.number()])).optional(),
+    extensions: z.record(z.string(), z.any()).optional()
+  })).optional(),
+  extensions: z.object({
+    cost: z.object({
+      requestedQueryCost: z.number(),
+      actualQueryCost: z.number(),
+      throttleStatus: z.object({
+        maximumAvailable: z.number(),
+        currentlyAvailable: z.number(),
+        restoreRate: z.number()
+      })
+    }).optional()
+  }).optional()
+});
+
+// GraphQL Client Config Schema
+export const GraphQLClientConfigSchema = z.object({
+  shopDomain: z.string().min(1),
+  accessToken: z.string().min(1),
+  apiVersion: z.string().optional(),
+  timeout: z.number().int().min(1000).optional()
+});
+
+// GraphQL Client Context Schema
+export const GraphQLClientContextSchema = z.object({
+  shopDomain: z.string().min(1),
+  operation: z.string().min(1),
+  requestId: z.string().optional(),
+  additionalData: z.record(z.string(), z.any()).optional()
+});
+
 // Throttling type exports
 export type ThrottlingConfigType = z.infer<typeof ThrottlingConfigSchema>;
 export type ThrottlingContextType = z.infer<typeof ThrottlingContextSchema>;
 export type ThrottlingResultType = z.infer<typeof ThrottlingResultSchema>;
+
+// GraphQL type exports
+export type GraphQLRequestType = z.infer<typeof GraphQLRequestSchema>;
+export type GraphQLResponseType = z.infer<typeof GraphQLResponseSchema>;
+export type GraphQLClientConfigType = z.infer<typeof GraphQLClientConfigSchema>;
+export type GraphQLClientContextType = z.infer<typeof GraphQLClientContextSchema>;

@@ -4,24 +4,9 @@
  * Type definitions for GraphQL operations and responses
  */
 
-import type { RetryConfig, RateLimitInfo } from './errors.types';
+import type { RateLimitInfo } from './errors.types';
 
-// GraphQL Response wrapper
-export interface GraphQLResponse<T> {
-  data?: T;
-  errors?: GraphQLError[];
-  extensions?: {
-    cost?: {
-      requestedQueryCost: number;
-      actualQueryCost: number;
-      throttleStatus: {
-        maximumAvailable: number;
-        currentlyAvailable: number;
-        restoreRate: number;
-      };
-    };
-  };
-}
+// GraphQL Response wrapper (moved to errors.types.ts)
 
 export interface GraphQLError {
   message: string;
@@ -90,13 +75,7 @@ export interface WebhookSubscriptionUpdateInput {
 
 // Rate Limiting Types (moved to errors.types.ts to avoid duplication)
 
-// GraphQL Client Configuration
-export interface GraphQLClientConfig {
-  shopDomain: string;
-  accessToken: string;
-  apiVersion: string;
-  retryConfig?: RetryConfig;
-}
+// GraphQL Client Configuration (moved to errors.types.ts)
 
 // Webhook Management Response Types
 export interface WebhookManagementResponse<T> {

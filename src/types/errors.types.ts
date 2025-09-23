@@ -128,8 +128,8 @@ export interface ThrottlingConfig {
 export interface ThrottlingContext {
   shopDomain: string;
   operation: string;
-  requestId?: string;
-  additionalData?: Record<string, any>;
+  requestId?: string | undefined;
+  additionalData?: Record<string, any> | undefined;
 }
 
 export interface ThrottlingResult<T> {
@@ -154,4 +154,57 @@ export interface IThrottlingService {
   calculateBackoffDelay(retryCount: number, config: ThrottlingConfig): number;
   
   shouldRetry(error: Error, retryCount: number, config: ThrottlingConfig): boolean;
+}
+
+// GraphQL Client Types
+export interface GraphQLRequest {
+  query: string;
+  variables?: Record<string, any> | undefined;
+  operationName?: string | undefined;
+}
+
+export interface GraphQLResponse<T = any> {
+  data?: T;
+  errors?: Array<{
+    message: string;
+    locations?: Array<{ line: number; column: number }>;
+    path?: Array<string | number>;
+    extensions?: Record<string, any>;
+  }>;
+  extensions?: {
+    cost?: {
+      requestedQueryCost: number;
+      actualQueryCost: number;
+      throttleStatus: ThrottleStatus;
+    };
+  };
+}
+
+export interface GraphQLClientConfig {
+  shopDomain: string;
+  accessToken: string;
+  apiVersion?: string | undefined;
+  timeout?: number | undefined;
+}
+
+export interface GraphQLClientContext {
+  shopDomain: string;
+  operation: string;
+  requestId?: string | undefined;
+  additionalData?: Record<string, any> | undefined;
+}
+
+// Base GraphQL Client interface
+export interface IGraphQLClient {
+  executeQuery<T>(
+    request: GraphQLRequest,
+    context: GraphQLClientContext,
+    config?: Partial<GraphQLClientConfig>
+  ): Promise<ThrottlingResult<GraphQLResponse<T>>>;
+  
+  executeMutation<T>(
+    request: GraphQLRequest,
+    context: GraphQLClientContext,
+    config?: Partial<GraphQLClientConfig>
+  ): Promise<ThrottlingResult<GraphQLResponse<T>>>;
 }
