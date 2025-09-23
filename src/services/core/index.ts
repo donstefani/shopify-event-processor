@@ -15,6 +15,11 @@ export {
   throttlingService
 } from './throttling.service';
 
+export { 
+  BaseGraphQLClient, 
+  baseGraphQLClient
+} from './graphql-client.service';
+
 // Re-export types and schemas for convenience
 export * from '../../types/errors.types';
 export * from '../../schemas/validation.schemas';

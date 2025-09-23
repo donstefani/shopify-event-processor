@@ -7,3 +7,4 @@
 
 export * from './errors.types';
 export * from './graphql.types';
+export * from './webhook.types';
