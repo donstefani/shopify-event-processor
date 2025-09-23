@@ -380,7 +380,7 @@ export class ErrorHandlingService implements IErrorHandlingService {
   private mergeWithDefaults(config?: Partial<ErrorNotificationConfig>): ErrorNotificationConfig {
     return {
       email: {
-        enabled: config?.email?.enabled ?? true,
+        enabled: config?.email?.enabled ?? (process.env['ERROR_EMAIL_ENABLED'] === 'true'),
         from: config?.email?.from ?? process.env['ERROR_EMAIL_FROM'] ?? 'noreply@donstefani.com',
         to: config?.email?.to ?? (process.env['ERROR_EMAIL_TO'] ? process.env['ERROR_EMAIL_TO'].split(',') : ['dstefani@donstefani.com']),
         smtp: {
